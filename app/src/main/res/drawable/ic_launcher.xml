@@ -1,0 +1,40 @@
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="108dp"
+    android:height="108dp"
+    android:viewportWidth="108"
+    android:viewportHeight="108">
+    <!-- Sky background -->
+    <path
+        android:fillColor="#2563EB"
+        android:pathData="M0,0h108v108h-108z" />
+    <!-- Ground -->
+    <path
+        android:fillColor="#16A34A"
+        android:pathData="M0,84h108v24h-108z" />
+    <path
+        android:fillColor="#92400E"
+        android:pathData="M0,90h108v18h-108z" />
+    <!-- Red Cap -->
+    <path
+        android:fillColor="#EF4444"
+        android:pathData="M28,44 C28,28 42,20 56,20 C70,20 82,28 82,44 L88,44 L88,50 L24,50 L24,44 Z" />
+    <!-- Cap Emblem -->
+    <path
+        android:fillColor="#FFFFFF"
+        android:pathData="M54,25 A9,9 0 1,0 54,43 A9,9 0 1,0 54,25 Z" />
+    <path
+        android:fillColor="#EF4444"
+        android:pathData="M49,39 L49,29 L52,29 L54,34 L56,29 L59,29 L59,39 L57,39 L57,33 L55,37 L53,37 L51,33 L51,39 Z" />
+    <!-- Face -->
+    <path
+        android:fillColor="#FDBA74"
+        android:pathData="M32,50 L76,50 L76,72 C76,78 68,82 54,82 C40,82 32,78 32,72 Z" />
+    <!-- Eyes -->
+    <path
+        android:fillColor="#1E293B"
+        android:pathData="M44,54 L48,54 L48,62 L44,62 Z M60,54 L64,54 L64,62 L60,62 Z" />
+    <!-- Mustache -->
+    <path
+        android:fillColor="#451A03"
+        android:pathData="M38,68 C44,64 50,66 54,68 C58,66 64,64 70,68 C70,73 62,75 54,73 C46,75 38,73 38,68 Z" />
+</vector>
