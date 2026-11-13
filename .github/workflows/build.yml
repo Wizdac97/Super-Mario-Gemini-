@@ -1,0 +1,107 @@
+name: Build Android APK
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  build:
+    name: Build Android app
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out source
+        uses: actions/checkout@v4
+
+      - name: Expand the original project archive
+        if: github.event_name != 'pull_request'
+        shell: bash
+        run: |
+          set -euo pipefail
+          shopt -s nullglob
+          parts=(project-archive.part-*)
+          if (( ${#parts[@]} > 0 )); then
+            cat "${parts[@]}" > "$RUNNER_TEMP/project.b64"
+            base64 --decode "$RUNNER_TEMP/project.b64" > "$RUNNER_TEMP/project.zip"
+            unzip -tq "$RUNNER_TEMP/project.zip"
+            cp .github/workflows/build.yml "$RUNNER_TEMP/bootstrap-build.yml"
+            mkdir -p "$RUNNER_TEMP/project"
+            unzip -q "$RUNNER_TEMP/project.zip" -d "$RUNNER_TEMP/project"
+            cp -a "$RUNNER_TEMP/project/." "$GITHUB_WORKSPACE/"
+            mkdir -p .github/workflows
+            cp "$RUNNER_TEMP/bootstrap-build.yml" .github/workflows/build.yml
+            rm -f project-archive.part-*
+            cat > README.md <<'README'
+          # Super Plumber Odyssey — Android Platformer
+
+          A native Kotlin Android platform game with custom sprite rendering, physics, sound, touch controls, save data, and handcrafted missions.
+
+          ## Download
+
+          Download the latest installable **debug APK** from the repository's Releases page, or download the APK artifact from the latest GitHub Actions run.
+
+          ## Build
+
+          GitHub Actions builds debug and release APK variants using JDK 17, Android SDK 34, and Gradle 8.7. The debug APK is signed with the standard Android debug key and is installable. The release APK is unsigned until a private signing key is configured.
+
+          ## App details
+
+          - Application ID: `com.superplumber.odyssey`
+          - Minimum Android version: Android 7.0 (API 24)
+          - Compile / target SDK: 34
+          README
+            git config user.name "github-actions[bot]"
+            git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+            git add -A
+            git commit -m "Add complete Android game source and build pipeline"
+            git push origin "HEAD:${GITHUB_REF_NAME}"
+          fi
+
+      - name: Set up JDK 17
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '17'
+          cache: gradle
+
+      - name: Set up Android SDK
+        uses: android-actions/setup-android@v3
+
+      - name: Install Android SDK 34
+        run: sdkmanager "platforms;android-34" "build-tools;34.0.0" "platform-tools"
+
+      - name: Set up Gradle 8.7
+        uses: gradle/actions/setup-gradle@v4
+        with:
+          gradle-version: '8.7'
+
+      - name: Build debug and release APKs
+        run: gradle assembleDebug assembleRelease --no-daemon
+
+      - name: Upload APKs as workflow artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: android-apks
+          path: |
+            app/build/outputs/apk/debug/*.apk
+            app/build/outputs/apk/release/*.apk
+          if-no-files-found: error
+          retention-days: 30
+
+      - name: Publish installable debug APK as a GitHub Release
+        if: github.event_name != 'pull_request'
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: android-build-${{ github.run_number }}-${{ github.run_attempt }}
+          name: Super Plumber Odyssey Android build ${{ github.run_number }}
+          body: |
+            Installable Android debug APK built by GitHub Actions.
+
+            The release-variant APK is unsigned; use the debug APK for direct installation.
+          prerelease: true
+          files: app/build/outputs/apk/debug/app-debug.apk
